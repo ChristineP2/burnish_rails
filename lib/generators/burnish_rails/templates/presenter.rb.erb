@@ -1,0 +1,9 @@
+<% module_namespacing do %>
+class <%= "#{class_name}Presenter" %> < ApplicationPresenter
+  Presenter.of('<%= class_name.underscore %>',
+               '<%= class_name.split('_').map(&:first).join.downcase %>',
+                <%= class_name %>)
+
+  # def configure(*args, **kws, &block); end
+end
+<% end %>

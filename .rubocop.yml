@@ -1,0 +1,22 @@
+require:
+  - rubocop-ast
+  - rubocop-performance
+  - rubocop-rails
+  - rubocop-rake
+  - rubocop-rspec
+
+AllCops:
+  TargetRubyVersion: 2.7
+  NewCops: enable
+
+Layout/LineLength:
+  Max: 80
+  Exclude:
+    - 'spec/dummy/**/*'
+
+Metrics/BlockLength:
+  CountComments: false  # count full line comments?
+  Exclude:
+    - 'Rakefile'
+    - '**/*.rake'
+    - 'spec/**/*.rb'

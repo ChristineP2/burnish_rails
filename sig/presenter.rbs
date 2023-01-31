@@ -1,0 +1,3 @@
+module Presenter
+  def self.of: -> untyped
+end

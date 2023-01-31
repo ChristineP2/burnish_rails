@@ -1,0 +1,124 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# inspiration credit: https://gist.github.com/lord-executor/3e6274f7768e3c0381df
+# This hook takes the following parameters:
+#   * the path to the file that holds the commit message so far
+#   * the type of commit
+#   * the commit SHA-1 if this is an amended commit
+
+require 'open3'
+require 'pry'
+
+PROTECTED_BRANCHES = %w[
+  main
+  master
+  development
+  dev
+  test
+  staging
+  stg
+  qa
+  production
+  prod
+].freeze
+
+def fetch_branch_name
+  Open3.popen3('git', 'symbolic-ref', '--short', 'HEAD') do |_, o,|
+    o.read.strip.chomp
+  end
+end
+
+def branch_description
+  return @branch_description unless @branch_description.nil?
+
+  description_array = @branch.gsub(/#{jira_ticket}/i, '').split(/[[:punct:]]/)
+  description_words = description_array.reject(&:empty?)
+
+  @branch_description ||= description_words.map(&:capitalize).join(' ').strip
+end
+
+def jira_ticket
+  @jira_ticket ||= @branch.match(/[a-zA-Z]{3,9}-[0-9]{1,9}/).to_s.upcase
+end
+
+def subject_text
+  return '<Optional Subject>' if branch_description.blank?
+
+  branch_description
+end
+
+def formatted_subject
+  "#{jira_ticket}: #{subject_text}\n\n"
+end
+
+def git_path
+  @git_path ||= Open3.popen3('git', 'rev-parse',
+                             '--git-dir') do |_stdin, stdout, _stderr|
+    @git_path = stdout.read.strip.chomp
+  end
+end
+
+def dir_instance_var_name(dir_name)
+  dir_name.gsub(/[^0-9A-Za-z]/, '')
+end
+
+def dir_exists?(dir_name)
+  var_name = "@dir_#{dir_instance_var_name(dir_name)}_exists"
+  test = instance_variable_get(var_name)
+  return test unless test.nil?
+
+  instance_variable_set(var_name, File.directory?(dir_name))
+end
+
+def rebasing?
+  @rebase_dir = "#{git_path}/rebase-merge"
+  dir_exists?(@rebase_dir)
+end
+
+def merging?
+  @rebase_dir = "#{git_path}/rebase-apply"
+  dir_exists?(@rebase_dir)
+end
+
+def active_rebase_or_merge?
+  rebasing? || merging?
+end
+
+def protected_branch?
+  PROTECTED_BRANCHES.include? @branch
+end
+
+def output_shell
+  $stdout.puts formatted_subject
+end
+
+def output_commit
+  message_file = ARGV[0]
+  original_message = format('%s ', File.read(message_file))
+
+  commit_msg = (formatted_subject + original_message)
+  File.write(message_file, commit_msg)
+end
+
+def shell?
+  ARGV.empty?
+end
+
+def check_display
+  $stdout.puts "Protected Branch? #{protected_branch?}"
+  $stdout.puts "Rebasing? #{rebasing?} - #{@rebase_dir}"
+  $stdout.puts "Merging? #{merging?} - #{@merge_dir}"
+end
+
+@branch = fetch_branch_name
+
+unless protected_branch? || active_rebase_or_merge?
+  if shell?
+    $stdout.puts check_display
+    $stdout.puts 'Shell execution detected.  Subject Message:'
+    output_shell
+  else
+    output_commit
+  end
+end

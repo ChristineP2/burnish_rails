@@ -9,6 +9,7 @@ require 'burnish_rails/translatable'
 # @author Christine Panus
 module BurnishRails
   class ApplicationRecord < ActiveRecord::Base
+    self.abstract_class = true
     include BurnishRails::Translatable
   end
 end

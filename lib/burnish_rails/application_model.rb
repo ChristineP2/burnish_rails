@@ -14,5 +14,9 @@ module BurnishRails
     include ActiveModel::API
     include ActiveModel::Attributes
     include BurnishRails::Translatable
+
+    def persisted?
+      false
+    end
   end
 end

@@ -63,11 +63,8 @@ PrepareCommitMsg:
     required_executable: "bin/hooks/prepare-commit-msg"
 PrePush:
   Brakeman:
-    command: ["bundle", "exec", "brakeman"]
+    command: ["bundle", "exec", "brakeman", "spec/dummy"]
     enabled: true
   RSpec:
     command: ["bundle", "exec", "rspec"]
-    enabled: true
-  Cucumber:
-    command: ["bundle", "exec", "cucumber"]
     enabled: true

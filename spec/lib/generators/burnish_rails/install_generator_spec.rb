@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 require 'support/file_manager'
-require 'generators/burnish_rails/install/install_generator'
+require 'generators/burnish_rails/install_generator'
 
 RSpec.describe BurnishRails::Generators::InstallGenerator do
   let(:config) { Spec::FileManager.new('CONFIG') }

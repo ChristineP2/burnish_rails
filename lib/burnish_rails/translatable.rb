@@ -10,7 +10,7 @@ module BurnishRails
     extend ActiveModel::Translation
 
     # The following methods are added to all objects using translatable.
-    module ClassMethods
+    class_methods do
       def i18n_superclass
         if superclass.name == 'BurnishRails::ApplicationRecord'
           return :activerecord
@@ -63,24 +63,24 @@ module BurnishRails
         i18n_translation(attribute_name, scope, sender)
       end
 
-      def human_attribute_name(name)
-        i18n_translation(name, i18n_attr_scope, :human_attribute_name)
+      def human_attribute(name)
+        i18n_translation(name, i18n_attr_scope, :human_attribute)
       end
 
-      def human_error_name(name)
-        i18n_translation(name, i18n_error_scope, :human_error_name)
+      def human_error(name)
+        i18n_translation(name, i18n_error_scope, :human_error)
       end
 
-      def human_enum_name(enum_name, enum_value)
+      def human_enum(enum_name, enum_value)
         name = "#{enum_translation_key(enum_name)}.#{enum_value}"
 
-        i18n_translation(name, i18n_attr_scope, :human_enum_name)
+        i18n_translation(name, i18n_attr_scope, :human_enum)
       end
 
       def enum_options_for_select(enum_name)
         translation_key = enum_translation_key(enum_name)
         send(translation_key).map do |key, _|
-          [human_enum_name(enum_name, key), key]
+          [human_enum(enum_name, key), key]
         end
       end
 

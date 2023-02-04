@@ -22,7 +22,7 @@ module BurnishRails
       #     * show - the attributes in the array assigned to the show key will
       #         be used when displaying the presented object.
 
-      def of(reference, abbr, klass, opts)
+      def of(reference, abbr, klass, opts={keys: {}})
         attribute_keys = klass.new.attribute_names.map(&:to_sym)
         reflection_keys = []
 
@@ -70,6 +70,12 @@ module BurnishRails
 
               send(:accessible_keys)
             end
+          end
+
+          define_method(:strong_keys) do
+            return send(:permitted_keys) if respond_to?(:permitted_keys)
+
+            send(:accessible_keys)
           end
 
           # Each accessible key will have a class method present
@@ -126,6 +132,7 @@ module BurnishRails
           define_method :primary_key do
             instance_variable_get(:@primary_key)
           end
+          alias_method :to_key, :primary_key
 
           define_method :params do
             @param_detail ||= instance_variable_get(:@params)
@@ -143,7 +150,7 @@ module BurnishRails
             return self.class.default_params if get_base.blank?
 
             get_base.permit(
-              self.class.editable_keys + self.class.hidden_keys
+              self.class.strong_keys
             ).with_defaults(self.class.default_params)
           end
 
@@ -180,6 +187,7 @@ module BurnishRails
             instance_variable_get("@#{reference}")
           end
           alias_method abbr.to_sym, reference.to_sym
+          alias_method :to_model, reference.to_sym
 
           access_keys.each do |attr|
             # @method #{key}_str - pass through to the Model Object
@@ -205,6 +213,7 @@ module BurnishRails
             # define_method("#{attr}=") do |val|
             #   self.send(reference).send("#{attr}=", val)
             # end
+            # delegate assign_attributes, ...
           end
 
           # Remember any extended class's methods will be class methods.

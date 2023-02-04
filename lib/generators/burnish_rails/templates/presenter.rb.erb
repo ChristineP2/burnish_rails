@@ -1,9 +1,11 @@
 <% module_namespacing do %>
 class <%= "#{class_name}Presenter" %> < ApplicationPresenter
-  Presenter.of('<%= class_name.underscore %>',
+  include BurnishRails::Presenter.of('<%= class_name.underscore %>',
                '<%= class_name.split('_').map(&:first).join.downcase %>',
                 <%= class_name %>)
 
-  # def configure(*args, **kws, &block); end
+  # def configure(...)
+  #   # Hook for additional config
+  # end
 end
 <% end %>

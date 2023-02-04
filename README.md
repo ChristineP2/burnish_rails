@@ -26,6 +26,28 @@ Create Default Config File:
 $ rails generate burnish_rails:install 
 ```
 
+## Translations
+
+The Translatable Concern...
+
+Expected conventions:
+```yaml
+en:
+  activemodel:
+    attributes:
+    models:
+    presenters:
+    errors:
+  activerecord:
+    attributes:
+    models:
+    errors:
+  <view_name_space>:
+    <view_name>:
+      
+```
+
+
 ## Contributing
 Contribution directions go here.
 

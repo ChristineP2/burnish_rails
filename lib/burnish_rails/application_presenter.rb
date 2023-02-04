@@ -11,7 +11,8 @@ require 'burnish_rails/translatable'
 # TODO: Refactor to create narrowly focused objects
 module BurnishRails
   # Add behaviors to presenter
-  class ApplicationPresenter
+  # FIXME: Add in Simple Delegator if it makes sense... :thinking_face:
+  class ApplicationPresenter # < SimpleDelegator
     include ActiveModel::API
     include ActiveModel::Attributes
     include BurnishRails::Translatable
@@ -35,7 +36,9 @@ module BurnishRails
       end
     end
 
-    def configure(*args, **kws, &block); end
+    def configure(...)
+      # Hook for additional config
+    end
 
     def to_s
       self.class.human_presenter_name
@@ -158,7 +161,19 @@ module BurnishRails
       end
     end
 
-    delegate :save, to: :reference
+    # FIX ME: Just delegate the dang thing
+    def load_attrs
+      return self if strong_params.blank?
+
+      to_model.assign_attributes(strong_params)
+
+      self
+    end
+
+    # FIXME: delegate validation and such
+    def valid?(context = nil)
+      ref.valid?(context)
+    end
 
     def params
       @params ||= default_params

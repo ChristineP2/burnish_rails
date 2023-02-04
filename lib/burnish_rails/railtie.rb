@@ -4,7 +4,7 @@ require 'rails/railtie'
 
 module BurnishRails
   class Railtie < ::Rails::Railtie
-    initializer "burnish_rails_railtie.configure_rails_initialization" do
+    initializer 'burnish_rails_railtie.configure_rails_initialization' do
       # Inspired by https://jeremydye.fyi/2022/06/18/adding-a-custom-generator-to-rails-scaffold/
       module BurnishRails
         module ScaffoldGenerator

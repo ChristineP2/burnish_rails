@@ -52,7 +52,7 @@ module BurnishRails
       return label if label.present?
 
       # Try Model if presenter didn't give results
-      label = ref.class.human_attribute_name(attr)
+      label = to_model.class.human_attribute_name(attr)
 
       return label if label.present?
 
@@ -145,14 +145,10 @@ module BurnishRails
       view_context.send("destroy_#{class_as_path_string}_path", id)
     end
 
-    def ref
-      send(self.class.reference)
-    end
-
     # FIXME: Split off a form_presenter that is returned by
     # application presenter
     def errors
-      error_array = ref&.send(:errors)&.send(:errors)
+      error_array = to_model&.send(:errors)&.send(:errors)
 
       return unless error_array.is_a?(Array)
 
@@ -172,7 +168,7 @@ module BurnishRails
 
     # FIXME: delegate validation and such
     def valid?(context = nil)
-      ref.valid?(context)
+      to_model.valid?(context)
     end
 
     def params

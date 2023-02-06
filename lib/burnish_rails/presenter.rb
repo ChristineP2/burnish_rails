@@ -7,8 +7,6 @@ module BurnishRails
   module Presenter
     class << self
       #
-      # @param [Symbol] reference, method name to use for the presented object
-      # @param [Symbol] abbr, abbreviation for the above reference
       # @param [Object<ActiveModel>] klass This is the presented class singleton
       # @param [Hash] opts, the options to create a message with.
       # @option opts [Hash{Symbol => Array<Symbol>}] :keys, attribute sets used
@@ -22,7 +20,7 @@ module BurnishRails
       #     * show - the attributes in the array assigned to the show key will
       #         be used when displaying the presented object.
 
-      def of(reference, abbr, klass, opts={keys: {}})
+      def of(klass, opts = { keys: {} })
         attribute_keys = klass.new.attribute_names.map(&:to_sym)
         reflection_keys = []
 
@@ -33,12 +31,6 @@ module BurnishRails
         access_keys = Array(attribute_keys) + Array(reflection_keys)
 
         class_methods = Module.new do
-          # @method #reference - access the symbol you defined as the reference
-          # symbol
-          define_method(:reference) do
-            reference
-          end
-
           # @method #presented_obj - access the singleton object to be presented
           define_method(:presented_obj) do
             klass
@@ -116,9 +108,9 @@ module BurnishRails
             )
             object = presenting(build_element)
             instance_variable_set(:@view_context, vc)
-            instance_variable_set("@#{reference}", object)
+            instance_variable_set(:@model, object)
             instance_variable_set(:@params, attributes[:params])
-            instance_variable_set(:@primary_key, attributes[:primary_key])
+            instance_variable_set(:@key, attributes[:primary_key])
 
             send(:configure,
                  attributes.except(
@@ -129,10 +121,14 @@ module BurnishRails
                  ))
           end
 
-          define_method :primary_key do
-            instance_variable_get(:@primary_key)
+          define_method :to_key do
+            instance_variable_get(:@key)
           end
-          alias_method :to_key, :primary_key
+
+          # @method #to_model - The model being presented
+          define_method(:to_model) do
+            instance_variable_get(:@model)
+          end
 
           define_method :params do
             @param_detail ||= instance_variable_get(:@params)
@@ -180,38 +176,29 @@ module BurnishRails
             instance_variable_get(:@view_context)
           end
 
-          # @method #{reference} - This creates a method using the reference
-          #   name presented, and aliases it to the abbreviation so you can
-          #   work with the model object in the presenter's customization
-          define_method(reference) do
-            instance_variable_get("@#{reference}")
-          end
-          alias_method abbr.to_sym, reference.to_sym
-          alias_method :to_model, reference.to_sym
-
           access_keys.each do |attr|
             # @method #{key}_str - pass through to the Model Object
             #   to access the unadulterated value for the accessor.
             #
             # Not actually a string, so this name might need to be changed.
             define_method("#{attr}_base") do
-              send(reference).send(attr)
+              send(to_model).send(attr)
             end
 
             # @method #{key} - presentable version of the key for
             #    the given format.
             define_method(attr) do
-              val = send(reference).send(attr)
+              val = send(:to_model).send(attr)
               return '' if val.nil?
 
               val.to_s
             end
 
             # FIXME: Should we delegate sender or explicitly manage
-            # sending to reference in a presenter instance?
+            # sending to model in a presenter instance?
             #
             # define_method("#{attr}=") do |val|
-            #   self.send(reference).send("#{attr}=", val)
+            #   self.send(:to_model).send("#{attr}=", val)
             # end
             # delegate assign_attributes, ...
           end

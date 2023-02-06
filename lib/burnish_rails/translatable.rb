@@ -100,7 +100,7 @@ module BurnishRails
 
       def i18n_default(name, sender)
         if i18n_object_type == 'presenters' && sender
-          return reference.send(sender, name)
+          return to_model.send(sender, name)
         end
 
         name.to_s.humanize.titleize
